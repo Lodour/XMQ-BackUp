@@ -23,7 +23,7 @@ class XmqPipeline(object):
 
     def spider_opened(self, spider):
         time_label = time.strftime("%Y-%m-%d %H-%M-%S", time.localtime())
-        file = open('%s %s.json' % (spider.name, time_label), 'wb')
+        file = open('%s %s.json' % (spider.export_name, time_label), 'wb')
         self.files[spider] = file
         self.exporter = JsonItemExporter(file, indent=2, ensure_ascii=False)
         self.exporter.start_exporting()
@@ -34,6 +34,9 @@ class XmqPipeline(object):
         file.close()
 
     def process_item(self, item, spider):
-        for i in item['data']:
-            self.exporter.export_item(i)
-        return item
+        try:
+            for i in item['data']:
+                self.exporter.export_item(i)
+            return item
+        except:
+            print(item)

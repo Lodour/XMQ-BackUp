@@ -8,6 +8,7 @@ from xmq.spiders import XmqBaseSpider
 
 class GroupsSpider(XmqBaseSpider):
     name = 'groups'
+    export_name = 'groups'
 
     start_urls = [XmqApi.URL_GROUPS]
 

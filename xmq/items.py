@@ -14,3 +14,7 @@ class XmqItem(scrapy.Item):
 
 class GroupItem(XmqItem):
     pass
+
+
+class TopicItem(XmqItem):
+    pass

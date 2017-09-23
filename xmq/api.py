@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import json
-from urllib.parse import urljoin
+from urllib.parse import urljoin, quote
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import url_matches
@@ -57,7 +56,7 @@ class XmqApi(object):
     URL_GROUPS = urljoin(URL_API, 'groups')
 
     @staticmethod
-    def URL_TOPICS(group_id, from_data=None):
+    def URL_TOPICS(group_id, end_time=''):
         """
         话题数据API
 
@@ -66,15 +65,12 @@ class XmqApi(object):
         为了避免对毫秒的处理，本项目直接使用`create_time`，并在返回结果中筛去。
 
         :param group_id: 圈子id
-        :param from_data: 上次请求所得的数据
+        :param end_time: 截止时间
         :return: 本次应请求的URL
         """
-        params = {
-            'group_id': group_id,
-            'end_time': '' if from_data is None else XmqApi.extract_data(from_data)['topics'][-1]['create_time']
-        }
-        return XmqApi.URL_TOPICS_FORMAT.format(**params)
+        return XmqApi.URL_TOPICS_FORMAT.format(group_id=group_id, end_time=quote(end_time))
 
     @staticmethod
-    def extract_data(response):
-        return json.loads(response.text).get('resp_data', None)
+    def find_latest_create_time(json_data):
+        topics = json_data['resp_data']['topics']
+        return topics and topics[-1]['create_time'] or None

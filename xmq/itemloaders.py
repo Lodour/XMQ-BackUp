@@ -4,6 +4,15 @@ import json
 from scrapy.loader import ItemLoader
 
 
+class FilterSameValue(object):
+    def __init__(self, name, value):
+        self.name = name
+        self.value = value
+
+    def __call__(self, value):
+        return None if self.name and value.get(self.name) == self.value else value
+
+
 class JsonItemLoader(ItemLoader):
     def __init__(self, *args, **kwargs):
         super(JsonItemLoader, self).__init__(*args, **kwargs)

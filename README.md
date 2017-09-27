@@ -14,16 +14,19 @@
 ```bash
 git clone git@github.com:Lodour/XMQ-BackUp.git
 cd XMQ-BackUp
+mv xmq/settings.exammple.py xmq/settings.py
 virtualenv env -p python3.5
 source ./env/bin/activate
 pip install -r requirements.txt
 ```
 
 3. 运行
-  * 查询 `scrapy list`
-  * 运行 `scrapy crawl <spider_name>`
-  * 免登陆 `scrapy crawl <spider_name> -a token=<access_token>`
-
+  * `scrapy crawl backup`
+  * 手动指定`token`
+    * 浏览器端登录后抓包获取`request headers`中的`authorization`字段
+    * 在`xmq/settings.py`末尾将其设置为`XMQ_ACCESS_TOKEN`
+  
 ## Note
-  * 由于未知原因，使用`phantomjs`渲染所得到的`access_token`不合法，欢迎交流
+  * `phantomjs`渲染所得到的`access_token`不合法，所以换成了`chromedriver`
   * `virtualenv`下使用`scrapy`有问题的请参照[这里](https://segmentfault.com/q/1010000010805727/a-1020000010807816)
+  * 欢迎交流

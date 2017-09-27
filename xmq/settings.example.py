@@ -67,6 +67,8 @@ DOWNLOADER_MIDDLEWARES = {
 ITEM_PIPELINES = {
     'xmq.pipelines.DuplicatesPipeline': 200,
     'xmq.pipelines.XmqPipeline': 300,
+    'xmq.pipelines.GroupItemExportPipeline': 301,
+    'xmq.pipelines.TopicItemExportPipeline': 301,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

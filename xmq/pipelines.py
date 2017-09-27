@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import time
 # Define your item pipelines here
 #
@@ -8,10 +9,13 @@ import time
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 from collections import defaultdict
 
+import scrapy
 from scrapy import signals
 from scrapy.exceptions import DropItem
+from scrapy.pipelines.images import ImagesPipeline
 
-from xmq.items import XmqItemExporter, GroupItem, TopicItem
+from xmq.api import XmqApi
+from xmq.items import XmqItemExporter, GroupItem, TopicItem, ImageItem
 
 
 class DuplicatesPipeline(object):
@@ -97,9 +101,9 @@ class TopicItemExportPipeline(BasePipeline):
         self.files, self.exporters = {}, {}
 
     def spider_closed(self, spider):
-        for exporter in self.exporters:
+        for exporter in self.exporters.values():
             exporter.finish_exporting()
-        for file in self.files:
+        for file in self.files.values():
             file.close()
 
     def process_item(self, item, spider):
@@ -122,3 +126,33 @@ class TopicItemExportPipeline(BasePipeline):
             exporter.start_exporting()
             self.exporters[name] = exporter
         return exporter
+
+
+class XmqImagesPipeline(ImagesPipeline):
+    """
+    下载TopicImages的pipeline
+
+    以image_id为文件名，按group_name分组存储在images目录下
+    """
+
+    @classmethod
+    def from_settings(cls, settings):
+        export_path = os.path.join(XmqPipeline.EXPORT_PATH, 'images')
+        return cls(export_path, settings=settings)
+
+    def get_media_requests(self, item, info):
+        for url in item['image_urls']:
+            meta = {'params': (item['group_name'], item['_id'], self.__image_type(url))}
+            yield scrapy.Request(url, headers={'Host': XmqApi.IMAGE_HOST}, meta=meta)
+
+    def process_item(self, item, spider):
+        if not isinstance(item, ImageItem):
+            return item
+        return super(XmqImagesPipeline, self).process_item(item, spider)
+
+    def file_path(self, request, response=None, info=None):
+        return '{}/{}{}'.format(*request.meta['params'])
+
+    def __image_type(self, url):
+        result = re.search(r'\.\w+$', url)
+        return result and result.group() or '.webp'

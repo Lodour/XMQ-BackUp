@@ -39,6 +39,7 @@ ROBOTSTXT_OBEY = True
 
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
     'Host': 'api.xiaomiquan.com',
     'Origin': 'https://wx.xiaomiquan.com',
     'Referer': 'https://wx.xiaomiquan.com/dweb/'
@@ -68,7 +69,8 @@ ITEM_PIPELINES = {
     'xmq.pipelines.DuplicatesPipeline': 200,
     'xmq.pipelines.XmqPipeline': 300,
     'xmq.pipelines.GroupItemExportPipeline': 301,
-    'xmq.pipelines.TopicItemExportPipeline': 301,
+    'xmq.pipelines.TopicItemExportPipeline': 302,
+    'xmq.pipelines.XmqImagesPipeline': 303,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -94,6 +96,9 @@ ITEM_PIPELINES = {
 
 # Web Driver
 CHROME_DRIVER_PATH = 'chromedriver'
+
+# 不备份的圈子id
+IGNORE_GROUP_ID = [758548854]
 
 # 小密圈access_token
 XMQ_ACCESS_TOKEN = ''

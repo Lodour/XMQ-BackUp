@@ -26,6 +26,14 @@ class TopicItem(XmqItem):
     group_name = scrapy.Field()
 
 
+class ImageItem(XmqItem):
+    group_name = scrapy.Field()
+
+    image_urls = scrapy.Field()
+    image_paths = scrapy.Field()
+    images = scrapy.Field()
+
+
 class XmqItemExporter(JsonItemExporter):
     """
     将data域内数据作为item导出

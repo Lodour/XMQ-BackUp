@@ -3,7 +3,7 @@ import scrapy
 
 from xmq import settings
 from xmq.api import XmqApi
-from xmq.items import GroupItem, TopicItem
+from xmq.items import ImageItem, TopicItem, GroupItem
 
 
 class BackupSpider(scrapy.Spider):
@@ -29,10 +29,14 @@ class BackupSpider(scrapy.Spider):
         group_id, group_name = response.meta['group_id'], response.meta['group_name']
 
         for topic in topics:
-            topic_id = topic['topic_id']
-            yield TopicItem(_id=topic_id, data=topic, group_name=group_name)
+            yield TopicItem(_id=topic['topic_id'], data=topic, group_name=group_name)
 
-        # 下一批话题
-        if topics:
-            url = XmqApi.URL_TOPICS(group_id, topics[-1]['create_time'])
-            yield scrapy.Request(url, callback=self.parse_topic, meta=response.meta)
+            if topic['type'] == 'talk':
+                for image in topic['talk'].get('images', []):
+                    yield ImageItem(_id=image['image_id'], group_name=group_name,
+                                    image_urls=[XmqApi.get_image_url(image)])
+
+            # 下一批话题
+            if topics:
+                url = XmqApi.URL_TOPICS(group_id, topics[-1]['create_time'])
+                yield scrapy.Request(url, callback=self.parse_topic, meta=response.meta)

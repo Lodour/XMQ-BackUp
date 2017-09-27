@@ -32,6 +32,8 @@ class XmqApi(object):
     # headers中access_token的字段名
     HEADER_TOKEN_FIELD = 'authorization'
 
+    IMAGE_HOST = 'images.xiaomiquan.com'
+
     @staticmethod
     def URL_TOPICS(group_id, end_time=''):
         """
@@ -75,6 +77,17 @@ class XmqApi(object):
             logger.info('access_token加载成功: %s' % access_token)
 
             return access_token
+
+    @staticmethod
+    def get_image_url(image):
+        """
+        从data中获取尽可能清晰的图片url
+        :param image: 图片数据
+        :return: 图片url
+        """
+        for field in ['original', 'large', 'thumbnail']:
+            if field in image:
+                return image[field]['url']
 
 
 class XmqApiResponse(TextResponse):

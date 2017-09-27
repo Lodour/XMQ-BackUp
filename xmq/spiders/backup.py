@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
+from xmq import settings
 from xmq.api import XmqApi
 from xmq.items import GroupItem, TopicItem
 
@@ -13,8 +14,13 @@ class BackupSpider(scrapy.Spider):
     def parse(self, response):
         for group in response.data['groups']:
             group_id = group['group_id']
+
+            if group_id in settings.IGNORE_GROUP_ID:
+                continue
+
             yield GroupItem(_id=group_id, data=group)
 
+            # 圈子话题
             meta = {'group_id': group_id, 'group_name': group['name']}
             yield scrapy.Request(XmqApi.URL_TOPICS(group_id), callback=self.parse_topic, meta=meta)
 
@@ -26,6 +32,7 @@ class BackupSpider(scrapy.Spider):
             topic_id = topic['topic_id']
             yield TopicItem(_id=topic_id, data=topic, group_name=group_name)
 
+        # 下一批话题
         if topics:
             url = XmqApi.URL_TOPICS(group_id, topics[-1]['create_time'])
             yield scrapy.Request(url, callback=self.parse_topic, meta=response.meta)

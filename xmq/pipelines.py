@@ -81,8 +81,6 @@ class GroupItemExportPipeline(BasePipeline):
 
     def process_item(self, item, spider):
         if isinstance(item, GroupItem):
-            if item['_id'] == '758548854':
-                raise DropItem('忽略"帮助与反馈"圈子')
             self.exporter.export_item(item)
         return item
 

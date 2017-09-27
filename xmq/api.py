@@ -4,6 +4,7 @@
 """
 
 import json
+import logging
 from urllib.parse import urljoin, quote
 
 from scrapy.http import TextResponse
@@ -14,6 +15,8 @@ from selenium.webdriver.support.wait import WebDriverWait
 from xmq.settings import CHROME_DRIVER_PATH
 from xmq.webdriver.expected_conditions import cookie_is_set, element_is_complete
 from xmq.webdriver.support import AutoClosableChrome
+
+logger = logging.getLogger(__name__)
 
 
 class XmqApi(object):
@@ -45,7 +48,7 @@ class XmqApi(object):
         return XmqApi.URL_TOPICS_FORMAT.format(group_id=group_id, end_time=quote(end_time))
 
     @staticmethod
-    def get_access_token(spider):
+    def get_access_token():
         """
         登录并获取access_token
         :param spider: 调用的spider
@@ -57,7 +60,7 @@ class XmqApi(object):
 
             # 等待跳转至主页
             WebDriverWait(driver, 60).until(url_matches(r'index/\d+'))
-            spider.logger.info('登录成功')
+            logger.info('登录成功')
 
             # 等待access_token加载完毕
             access_token = WebDriverWait(driver, 30).until(cookie_is_set('access_token'))
@@ -69,7 +72,7 @@ class XmqApi(object):
             avatar_complete = element_is_complete((By.CSS_SELECTOR, 'p.avastar-p img'))
             WebDriverWait(driver, 30).until(avatar_complete)
 
-            spider.logger.info('access_token加载成功: %s' % access_token)
+            logger.info('access_token加载成功: %s' % access_token)
 
             return access_token
 

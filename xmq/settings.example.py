@@ -33,7 +33,6 @@ ROBOTSTXT_OBEY = True
 
 # Disable cookies (enabled by default)
 # COOKIES_ENABLED = False
-COOKIES_DEBUG = True
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
@@ -52,9 +51,10 @@ DEFAULT_REQUEST_HEADERS = {
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'xmq.middlewares.MyCustomDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    'xmq.middlewares.AccessTokenMiddleware': 543,
+    'xmq.middlewares.ConvertToXmqApiResponseMiddleware': 544,
+}
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html
@@ -65,6 +65,7 @@ DEFAULT_REQUEST_HEADERS = {
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
+    'xmq.pipelines.DuplicatesPipeline': 200,
     'xmq.pipelines.XmqPipeline': 300,
 }
 
@@ -91,3 +92,6 @@ ITEM_PIPELINES = {
 
 # Web Driver
 CHROME_DRIVER_PATH = 'chromedriver'
+
+# 小密圈access_token
+XMQ_ACCESS_TOKEN = ''

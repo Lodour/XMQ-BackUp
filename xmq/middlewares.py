@@ -4,18 +4,16 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import json
 
 from scrapy import signals
 
+from xmq.api import XmqApi, XmqApiResponse
+
 
 class XmqSpiderMiddleware(object):
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the spider middleware does not modify the
-    # passed objects.
-
     @classmethod
     def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
         s = cls()
         crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
         return s
@@ -25,6 +23,7 @@ class XmqSpiderMiddleware(object):
         # middleware and into the spider.
 
         # Should return None or raise an exception.
+        setattr(response, 'json_data', json.loads(response.text))
         return None
 
     def process_spider_output(self, response, result, spider):
@@ -54,3 +53,46 @@ class XmqSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class ConvertToXmqApiResponseMiddleware(object):
+    """
+    将来自api的Response转换为XmqApiResponse
+    由于[1, 2]对response的class进行了分发，为了不受其影响，本middleware的顺序应小于590[2]
+
+    References:
+        [1] scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware
+        [2] https://doc.scrapy.org/en/latest/topics/settings.html?highlight=settings#downloader-middlewares-base
+        [3] https://github.com/scrapy/scrapy/issues/1877
+    """
+
+    def process_response(self, request, response, spider):
+        if request.method == 'HEAD':
+            return response
+        if not request.url.startswith(XmqApi.URL_API):
+            return response
+        return response.replace(cls=XmqApiResponse)
+
+
+class AccessTokenMiddleware(object):
+    """
+    自动获取、添加、请求更新access_token的中间件
+    """
+
+    # middleware是通过实例调用的，为了维护全局的token，需要放在类变量里
+    TOKEN = None
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        cls.TOKEN = crawler.settings['XMQ_ACCESS_TOKEN'] or XmqApi.get_access_token()
+        return cls()
+
+    def process_request(self, request, spider):
+        request.headers[XmqApi.HEADER_TOKEN_FIELD] = AccessTokenMiddleware.TOKEN
+
+    def process_response(self, request, response, spider):
+        if isinstance(response, XmqApiResponse) and response.code == 401:
+            spider.logger.warn('access_token(%s)已失效: %r' % (AccessTokenMiddleware.TOKEN, response.data))
+            AccessTokenMiddleware.TOKEN = XmqApi.get_access_token()
+            return request
+        return response

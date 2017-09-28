@@ -72,7 +72,7 @@ class GroupItemExportPipeline(BasePipeline):
     """
     EXPORT_PATH = os.path.join(XmqPipeline.EXPORT_PATH, 'groups.json')
 
-    def spider_opened(self, spider):
+    def __init__(self):
         self.file = open(self.EXPORT_PATH, 'wb')
         self.exporter = XmqItemExporter(self.file)
         self.exporter.start_exporting()
@@ -95,7 +95,7 @@ class TopicItemExportPipeline(BasePipeline):
     """
     EXPORT_PATH = os.path.join(XmqPipeline.EXPORT_PATH, '{name}')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.files, self.exporters = {}, {}
         self.seen_groups = set()
 
@@ -110,7 +110,7 @@ class TopicItemExportPipeline(BasePipeline):
         return item
 
     def __check_group(self, name):
-        if not name in self.seen_groups:
+        if name not in self.seen_groups:
             self.seen_groups.add(name)
 
             path = self.EXPORT_PATH.format(name=name)

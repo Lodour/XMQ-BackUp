@@ -74,7 +74,6 @@ class XmqApi(object):
     def get_access_token():
         """
         登录并获取access_token
-        :param spider: 调用的spider
         :return: access_token
         """
 

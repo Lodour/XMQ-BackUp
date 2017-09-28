@@ -42,7 +42,7 @@ class BackupSpider(scrapy.Spider):
                     item = TopicFilesItem(_id=topic_id, data=files,
                                           group_name=group_name, file_urls=list())
                     url = XmqApi.URL_FILE_DOWNLOAD(item['data'][0]['file_id'])
-                    yield scrapy.Request(url, callback=self.parse_file, meta={'item': item, 'next': 1})
+                    yield scrapy.Request(url, callback=self.parse_file, meta={'item': item, 'i': 1})
 
         # 下一批话题
         if topics:
@@ -51,10 +51,10 @@ class BackupSpider(scrapy.Spider):
             yield scrapy.Request(url, callback=self.parse_topic)
 
     def parse_file(self, response):
-        item, next = map(response.meta.get, ['item', 'next'])
+        item, i = map(response.meta.get, ['item', 'i'])
         item['file_urls'].append(response.data['download_url'])
-        if next < len(item['data']):
-            url = XmqApi.URL_FILE_DOWNLOAD(item['data'][next]['file_id'])
-            yield scrapy.Request(url, callback=self.parse_file, meta={'item': item, 'next': next + 1})
+        if i < len(item['data']):
+            url = XmqApi.URL_FILE_DOWNLOAD(item['data'][i]['file_id'])
+            yield scrapy.Request(url, callback=self.parse_file, meta={'item': item, 'i': i + 1})
         else:
             yield item

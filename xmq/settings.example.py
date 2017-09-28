@@ -55,6 +55,7 @@ DEFAULT_REQUEST_HEADERS = {
 DOWNLOADER_MIDDLEWARES = {
     'xmq.middlewares.AccessTokenMiddleware': 543,
     'xmq.middlewares.ConvertToXmqApiResponseMiddleware': 544,
+    'xmq.middlewares.HttpHostCheckMiddleware': 545,
 }
 
 # Enable or disable extensions
@@ -70,7 +71,8 @@ ITEM_PIPELINES = {
     'xmq.pipelines.XmqPipeline': 300,
     'xmq.pipelines.GroupItemExportPipeline': 301,
     'xmq.pipelines.TopicItemExportPipeline': 302,
-    'xmq.pipelines.XmqImagesPipeline': 303,
+    'xmq.pipelines.TopicImagesPipeline': 303,
+    'xmq.pipelines.TopicFilesPipeline': 304,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

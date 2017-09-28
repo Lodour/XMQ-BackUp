@@ -26,12 +26,18 @@ class TopicItem(XmqItem):
     group_name = scrapy.Field()
 
 
-class ImageItem(XmqItem):
+class TopicImagesItem(XmqItem):
     group_name = scrapy.Field()
 
     image_urls = scrapy.Field()
-    image_paths = scrapy.Field()
     images = scrapy.Field()
+
+
+class TopicFilesItem(XmqItem):
+    group_name = scrapy.Field()
+
+    file_urls = scrapy.Field()
+    files = scrapy.Field()
 
 
 class XmqItemExporter(JsonItemExporter):

@@ -4,6 +4,7 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
+from urllib.parse import urlsplit
 
 from xmq.api import XmqApi, XmqApiResponse
 
@@ -46,3 +47,15 @@ class AccessTokenMiddleware(object):
             AccessTokenMiddleware.TOKEN = XmqApi.get_access_token()
             return request
         return response
+
+
+class HttpHostCheckMiddleware(object):
+    """
+    自动检测并修正request头部中host的中间件
+    """
+
+    def process_request(self, request, spider):
+        url, host = request.url, request.headers.get('Host')
+        real_host = urlsplit(url).netloc
+        if not host or host != real_host:
+            request.headers['Host'] = real_host

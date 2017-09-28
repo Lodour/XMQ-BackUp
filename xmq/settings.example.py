@@ -15,7 +15,9 @@ SPIDER_MODULES = ['xmq.spiders']
 NEWSPIDER_MODULE = 'xmq.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36'
+USER_AGENT = ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) '
+              'AppleWebKit/537.36 (KHTML, like Gecko) '
+              'Chrome/60.0.3112.90 Safari/537.36')
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -55,6 +57,7 @@ DEFAULT_REQUEST_HEADERS = {
 DOWNLOADER_MIDDLEWARES = {
     'xmq.middlewares.AccessTokenMiddleware': 543,
     'xmq.middlewares.ConvertToXmqApiResponseMiddleware': 544,
+    'xmq.middlewares.HttpHostCheckMiddleware': 545,
 }
 
 # Enable or disable extensions
@@ -70,7 +73,8 @@ ITEM_PIPELINES = {
     'xmq.pipelines.XmqPipeline': 300,
     'xmq.pipelines.GroupItemExportPipeline': 301,
     'xmq.pipelines.TopicItemExportPipeline': 302,
-    'xmq.pipelines.XmqImagesPipeline': 303,
+    'xmq.pipelines.TopicImagesPipeline': 303,
+    'xmq.pipelines.TopicFilesPipeline': 304,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -98,7 +102,9 @@ ITEM_PIPELINES = {
 CHROME_DRIVER_PATH = 'chromedriver'
 
 # 不备份的圈子id
-IGNORE_GROUP_ID = [758548854]
+IGNORE_GROUP_ID = [
+    758548854,  # 帮助与反馈
+]
 
 # 小密圈access_token
 XMQ_ACCESS_TOKEN = ''

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import re
 import time
 # Define your item pipelines here
 #
@@ -12,10 +11,10 @@ from collections import defaultdict
 import scrapy
 from scrapy import signals
 from scrapy.exceptions import DropItem
+from scrapy.pipelines.files import FilesPipeline
 from scrapy.pipelines.images import ImagesPipeline
 
-from xmq.api import XmqApi
-from xmq.items import XmqItemExporter, GroupItem, TopicItem, ImageItem
+from xmq.items import XmqItemExporter, GroupItem, TopicItem, TopicFilesItem, TopicImagesItem
 
 
 class DuplicatesPipeline(object):
@@ -27,13 +26,13 @@ class DuplicatesPipeline(object):
     """
 
     def __init__(self):
-        self.populated_ids = defaultdict(set)
+        self.seen_ids = defaultdict(set)
 
     def process_item(self, item, spider):
         _class, _id = item.__class__, item['_id']
-        if _id in self.populated_ids[_class]:
+        if _id in self.seen_ids[_class]:
             raise DropItem('重复的 %s (%s)' % (_class, _id))
-        self.populated_ids[_class].add(_id)
+        self.seen_ids[_class].add(_id)
         return item
 
 
@@ -58,7 +57,7 @@ class BasePipeline(object):
 
 class XmqPipeline(BasePipeline):
     """
-    项目pipeline，此处用于创建导出数据的目录
+    项目pipeline，用于创建导出数据的目录
     """
     TIME_LABEL = time.strftime("%Y-%m-%d %H-%M-%S", time.localtime())
     EXPORT_PATH = os.path.join(os.getcwd(), 'downloads', TIME_LABEL)
@@ -84,7 +83,7 @@ class GroupItemExportPipeline(BasePipeline):
         self.file.close()
 
     def process_item(self, item, spider):
-        if isinstance(item, GroupItem):
+        if type(item) is GroupItem:
             self.exporter.export_item(item)
         return item
 
@@ -95,40 +94,39 @@ class TopicItemExportPipeline(BasePipeline):
 
     每个group下的topics分别存储在不同的json文件中
     """
-    EXPORT_PATH = os.path.join(XmqPipeline.EXPORT_PATH, 'topics-{name}.json')
+    EXPORT_PATH = os.path.join(XmqPipeline.EXPORT_PATH, '{name}')
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.files, self.exporters = {}, {}
+        self.seen_groups = set()
 
     def spider_closed(self, spider):
-        for exporter in self.exporters.values():
-            exporter.finish_exporting()
-        for file in self.files.values():
-            file.close()
+        list(map(lambda e: e.finish_exporting(), self.exporters.values()))
+        list(map(lambda f: f.close(), self.files.values()))
 
     def process_item(self, item, spider):
-        if isinstance(item, TopicItem):
-            exporter = self.__get_exporter(item['group_name'])
-            exporter.export_item(item)
+        if type(item) is TopicItem:
+            name = self.__check_group(item['group_name'])
+            self.exporters[name].export_item(item)
         return item
 
-    def __get_file(self, name):
-        file = self.files.get(name)
-        if not file:
-            file = open(self.EXPORT_PATH.format(name=name), 'wb')
-            self.files[name] = file
-        return file
+    def __check_group(self, name):
+        if name not in self.seen_groups:
+            self.seen_groups.add(name)
 
-    def __get_exporter(self, name):
-        exporter = self.exporters.get(name)
-        if not exporter:
-            exporter = XmqItemExporter(self.__get_file(name))
+            path = self.EXPORT_PATH.format(name=name)
+            os.makedirs(path)
+
+            file = open(os.path.join(path, 'topics.json'), 'wb')
+            self.files[name] = file
+
+            exporter = XmqItemExporter(file)
             exporter.start_exporting()
             self.exporters[name] = exporter
-        return exporter
+        return name
 
 
-class XmqImagesPipeline(ImagesPipeline):
+class TopicImagesPipeline(ImagesPipeline):
     """
     下载TopicImages的pipeline
 
@@ -137,22 +135,46 @@ class XmqImagesPipeline(ImagesPipeline):
 
     @classmethod
     def from_settings(cls, settings):
-        export_path = os.path.join(XmqPipeline.EXPORT_PATH, 'images')
-        return cls(export_path, settings=settings)
+        return cls(XmqPipeline.EXPORT_PATH, settings=settings)
 
     def get_media_requests(self, item, info):
-        for url in item['image_urls']:
-            meta = {'params': (item['group_name'], item['_id'], self.__image_type(url))}
-            yield scrapy.Request(url, headers={'Host': XmqApi.IMAGE_HOST}, meta=meta)
+        for url, image in zip(item['image_urls'], item['data']):
+            yield scrapy.Request(url, meta={'path': self._make_path(item, image)})
 
     def process_item(self, item, spider):
-        if not isinstance(item, ImageItem):
+        if not type(item) is TopicImagesItem:
             return item
-        return super(XmqImagesPipeline, self).process_item(item, spider)
+        return super(TopicImagesPipeline, self).process_item(item, spider)
 
     def file_path(self, request, response=None, info=None):
-        return '{}/{}{}'.format(*request.meta['params'])
+        return request.meta['path']
 
-    def __image_type(self, url):
-        result = re.search(r'\.\w+$', url)
-        return result and result.group() or '.webp'
+    def _make_path(self, item, image):
+        return '{}/images/{}.jpg'.format(item['group_name'], image['image_id'])
+
+
+class TopicFilesPipeline(FilesPipeline):
+    """
+    下载TopicFile的pipeline
+
+    按group_name分组存储在files目录下
+    """
+
+    @classmethod
+    def from_settings(cls, settings):
+        return cls(XmqPipeline.EXPORT_PATH, settings=settings)
+
+    def get_media_requests(self, item, info):
+        for url, file in zip(item['file_urls'], item['data']):
+            yield scrapy.Request(url, meta={'path': self._make_path(item, file)})
+
+    def process_item(self, item, spider):
+        if not type(item) is TopicFilesItem:
+            return item
+        return super(TopicFilesPipeline, self).process_item(item, spider)
+
+    def file_path(self, request, response=None, info=None):
+        return request.meta['path']
+
+    def _make_path(self, item, file):
+        return '{}/files/{}'.format(item['group_name'], file['name'])

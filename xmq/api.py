@@ -29,10 +29,11 @@ class XmqApi(object):
     URL_GROUPS = urljoin(URL_API, 'groups')
     URL_TOPICS_FORMAT = urljoin(URL_API, 'groups/{group_id}/topics?count=20&end_time={end_time}')
 
+    URL_FILE_INFO_FORMAT = 'https://api.xiaomiquan.com/v1.7/files/{file_id}'
+    URL_FILE_DOWNLOAD_FORMAT = '%s/%s' % (URL_FILE_INFO_FORMAT, 'download_url')
+
     # headers中access_token的字段名
     HEADER_TOKEN_FIELD = 'authorization'
-
-    IMAGE_HOST = 'images.xiaomiquan.com'
 
     @staticmethod
     def URL_TOPICS(group_id, end_time=''):
@@ -50,10 +51,29 @@ class XmqApi(object):
         return XmqApi.URL_TOPICS_FORMAT.format(group_id=group_id, end_time=quote(end_time))
 
     @staticmethod
+    def URL_FILE_INFO(file_id):
+        """
+        文件信息API
+
+        :param file_id: 文件id
+        :return: URL
+        """
+        return XmqApi.URL_FILE_INFO_FORMAT.format(file_id=file_id)
+
+    @staticmethod
+    def URL_FILE_DOWNLOAD(file_id):
+        """
+        文件信息API
+
+        :param file_id: 文件id
+        :return: URL
+        """
+        return XmqApi.URL_FILE_DOWNLOAD_FORMAT.format(file_id=file_id)
+
+    @staticmethod
     def get_access_token():
         """
         登录并获取access_token
-        :param spider: 调用的spider
         :return: access_token
         """
 

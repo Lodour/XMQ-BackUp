@@ -13,6 +13,7 @@ class XmqItem(scrapy.Item):
     """
     因为不能确定api返回的具体字段，因此将所有字段存在data域中
     为了筛去重复item，指定了一个id域
+    是本项目所有item的父类
     """
     _id = scrapy.Field()
     data = scrapy.Field()
@@ -26,12 +27,14 @@ class TopicItem(XmqItem):
     group_name = scrapy.Field()
 
 
-class ImageItem(XmqItem):
-    group_name = scrapy.Field()
-
+class TopicImagesItem(TopicItem):
     image_urls = scrapy.Field()
-    image_paths = scrapy.Field()
     images = scrapy.Field()
+
+
+class TopicFilesItem(TopicItem):
+    file_urls = scrapy.Field()
+    files = scrapy.Field()
 
 
 class XmqItemExporter(JsonItemExporter):

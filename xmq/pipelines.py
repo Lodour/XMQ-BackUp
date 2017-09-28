@@ -105,9 +105,8 @@ class TopicItemExportPipeline(BasePipeline):
 
     def process_item(self, item, spider):
         if isinstance(item, TopicItem):
-            self.__check_group(item['group_name'])
-            exporter = self.exporters[item['group_name']]
-            exporter.export_item(item)
+            name = self.__check_group(item['group_name'])
+            self.exporters[name].export_item(item)
         return item
 
     def __check_group(self, name):
@@ -123,6 +122,7 @@ class TopicItemExportPipeline(BasePipeline):
             exporter = XmqItemExporter(file)
             exporter.start_exporting()
             self.exporters[name] = exporter
+        return name
 
 
 class TopicImagesPipeline(ImagesPipeline):
@@ -138,7 +138,7 @@ class TopicImagesPipeline(ImagesPipeline):
 
     def get_media_requests(self, item, info):
         for url, image in zip(item['image_urls'], item['data']):
-            yield scrapy.Request(url, meta={'path': self._file_path(item, image)})
+            yield scrapy.Request(url, meta={'path': self._make_path(item, image)})
 
     def process_item(self, item, spider):
         if not isinstance(item, TopicImagesItem):
@@ -148,7 +148,7 @@ class TopicImagesPipeline(ImagesPipeline):
     def file_path(self, request, response=None, info=None):
         return request.meta['path']
 
-    def _file_path(self, item, image):
+    def _make_path(self, item, image):
         return '{}/images/{}.jpg'.format(item['group_name'], image['image_id'])
 
 
@@ -165,7 +165,7 @@ class TopicFilesPipeline(FilesPipeline):
 
     def get_media_requests(self, item, info):
         for url, file in zip(item['file_urls'], item['data']):
-            yield scrapy.Request(url, meta={'path': self._file_path(item, file)})
+            yield scrapy.Request(url, meta={'path': self._make_path(item, file)})
 
     def process_item(self, item, spider):
         if not isinstance(item, TopicFilesItem):
@@ -175,5 +175,5 @@ class TopicFilesPipeline(FilesPipeline):
     def file_path(self, request, response=None, info=None):
         return request.meta['path']
 
-    def _file_path(self, item, file):
+    def _make_path(self, item, file):
         return '{}/files/{}'.format(item['group_name'], file['name'])

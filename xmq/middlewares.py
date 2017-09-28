@@ -30,7 +30,8 @@ class AccessTokenMiddleware(object):
     自动获取、添加、请求更新access_token的中间件
     """
 
-    # middleware是通过实例调用的，为了维护全局的token，需要放在类变量里
+    # middleware是通过实例调用的
+    # 为了维护全局的token，需要放在类变量里
     TOKEN = None
 
     @classmethod

@@ -100,7 +100,9 @@ ITEM_PIPELINES = {
 CHROME_DRIVER_PATH = 'chromedriver'
 
 # 不备份的圈子id
-IGNORE_GROUP_ID = [758548854]
+IGNORE_GROUP_ID = [
+    758548854,  # 帮助与反馈
+]
 
 # 小密圈access_token
 XMQ_ACCESS_TOKEN = ''

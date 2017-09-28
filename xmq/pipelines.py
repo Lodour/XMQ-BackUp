@@ -63,7 +63,8 @@ class XmqPipeline(BasePipeline):
     EXPORT_PATH = os.path.join(os.getcwd(), 'downloads', TIME_LABEL)
 
     def spider_opened(self, spider):
-        os.makedirs(self.EXPORT_PATH)
+        if not os.path.exists(self.EXPORT_PATH):
+            os.makedirs(self.EXPORT_PATH)
 
 
 class GroupItemExportPipeline(BasePipeline):
@@ -72,7 +73,7 @@ class GroupItemExportPipeline(BasePipeline):
     """
     EXPORT_PATH = os.path.join(XmqPipeline.EXPORT_PATH, 'groups.json')
 
-    def __init__(self):
+    def spider_opened(self, spider):
         self.file = open(self.EXPORT_PATH, 'wb')
         self.exporter = XmqItemExporter(self.file)
         self.exporter.start_exporting()
@@ -82,7 +83,7 @@ class GroupItemExportPipeline(BasePipeline):
         self.file.close()
 
     def process_item(self, item, spider):
-        if isinstance(item, GroupItem):
+        if type(item) is GroupItem:
             self.exporter.export_item(item)
         return item
 
@@ -104,7 +105,7 @@ class TopicItemExportPipeline(BasePipeline):
         list(map(lambda f: f.close(), self.files.values()))
 
     def process_item(self, item, spider):
-        if isinstance(item, TopicItem):
+        if type(item) is TopicItem:
             name = self.__check_group(item['group_name'])
             self.exporters[name].export_item(item)
         return item
@@ -141,7 +142,7 @@ class TopicImagesPipeline(ImagesPipeline):
             yield scrapy.Request(url, meta={'path': self._make_path(item, image)})
 
     def process_item(self, item, spider):
-        if not isinstance(item, TopicImagesItem):
+        if not type(item) is TopicImagesItem:
             return item
         return super(TopicImagesPipeline, self).process_item(item, spider)
 
@@ -168,7 +169,7 @@ class TopicFilesPipeline(FilesPipeline):
             yield scrapy.Request(url, meta={'path': self._make_path(item, file)})
 
     def process_item(self, item, spider):
-        if not isinstance(item, TopicFilesItem):
+        if not type(item) is TopicFilesItem:
             return item
         return super(TopicFilesPipeline, self).process_item(item, spider)
 

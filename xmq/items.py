@@ -24,7 +24,7 @@ class GroupItem(XmqItem):
 
 
 class TopicItem(XmqItem):
-    pass
+    group_name = scrapy.Field()
 
 
 class TopicImagesItem(TopicItem):

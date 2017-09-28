@@ -27,21 +27,23 @@ class BackupSpider(scrapy.Spider):
 
         for topic in topics:
             topic_id, group_name = topic['topic_id'], topic['group']['name']
-            yield TopicItem(_id=topic_id, data=topic)
+            yield TopicItem(_id=topic_id, data=topic, group_name=group_name)
 
             if topic['type'] == 'talk':
 
                 # 图片
-                for images in topic['talk'].get('images', []):
+                images = topic['talk'].get('images')
+                if images:
                     image_urls = map(XmqApi.get_image_url, images)
                     yield TopicImagesItem(_id=topic_id, data=images,
                                           group_name=group_name, image_urls=image_urls)
 
                 # 文件
-                for files in topic['talk'].get('files', []):
+                files = topic['talk'].get('files')
+                if files:
                     item = TopicFilesItem(_id=topic_id, data=files,
                                           group_name=group_name, file_urls=list())
-                    url = XmqApi.URL_FILE_DOWNLOAD(item['data'][0]['file_id'])
+                    url = XmqApi.URL_FILE_DOWNLOAD(files[0]['file_id'])
                     yield scrapy.Request(url, callback=self.parse_file, meta={'item': item, 'i': 1})
 
         # 下一批话题

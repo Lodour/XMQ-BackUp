@@ -21,12 +21,11 @@ pip install -r requirements.txt
 ```
 
 3. 运行
-  * `scrapy crawl backup`
+  * `python -m scrapy crawl backup`
   * 手动指定`token`
     * 浏览器端登录后抓包获取`request headers`中的`authorization`字段
     * 在`xmq/settings.py`末尾将其设置为`XMQ_ACCESS_TOKEN`
   
 ## Note
   * `phantomjs`渲染所得到的`access_token`不合法，所以换成了`chromedriver`
-  * `virtualenv`下使用`scrapy`有问题的请参照[这里](https://segmentfault.com/q/1010000010805727/a-1020000010807816)
   * 欢迎交流

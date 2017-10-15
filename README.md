@@ -14,7 +14,7 @@
 ```bash
 git clone git@github.com:Lodour/XMQ-BackUp.git
 cd XMQ-BackUp
-mv xmq/settings.exammple.py xmq/settings.py
+mv xmq/settings.example.py xmq/settings.py
 virtualenv env -p python3.5
 source ./env/bin/activate
 pip install -r requirements.txt

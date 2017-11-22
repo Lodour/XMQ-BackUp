@@ -1,7 +1,7 @@
 # XMQ-BackUp
 ![](https://img.shields.io/packagist/l/doctrine/orm.svg) ![](https://img.shields.io/badge/python-3.5-ff69b4.svg)
 
-小密圈备份
+小密圈备份，圈子/话题/图片/文件。
 
 ## Usage
 1. 安装 `chromedriver`
@@ -25,7 +25,7 @@ pip install -r requirements.txt
   * 手动指定`token`及`User-Agent`
     * 浏览器端登录后抓包获取`request headers`中的`authorization`和`User-Agent`字段
     * 在`xmq/settings.py`末尾将其设置为`XMQ_ACCESS_TOKEN`和`XMQ_USER_AGENT`
-  
+  
 ## Note
   * `phantomjs`渲染所得到的`access_token`不合法，所以换成了`chromedriver`
   * `virtualenv`下使用`scrapy`有问题的请参照[这里](https://segmentfault.com/q/1010000010805727/a-1020000010807816)

@@ -15,9 +15,7 @@ SPIDER_MODULES = ['xmq.spiders']
 NEWSPIDER_MODULE = 'xmq.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) '
-              'AppleWebKit/537.36 (KHTML, like Gecko) '
-              'Chrome/60.0.3112.90 Safari/537.36')
+# USER_AGENT = ''
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -55,7 +53,7 @@ DEFAULT_REQUEST_HEADERS = {
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-    'xmq.middlewares.AccessTokenMiddleware': 543,
+    'xmq.middlewares.AuthorizationMiddleware': 543,
     'xmq.middlewares.ConvertToXmqApiResponseMiddleware': 544,
     'xmq.middlewares.HttpHostCheckMiddleware': 545,
 }
@@ -106,5 +104,6 @@ IGNORE_GROUP_ID = [
     758548854,  # 帮助与反馈
 ]
 
-# 小密圈access_token
+# 小密圈授权相关设置
 XMQ_ACCESS_TOKEN = ''
+XMQ_USER_AGENT = ''

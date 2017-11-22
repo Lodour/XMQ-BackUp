@@ -23,13 +23,14 @@ class XmqApi(object):
     """
     小密圈API接口信息
     """
+    API_VERSION = 'v1.8'
 
-    URL_API = 'https://api.xiaomiquan.com/v1.7/'
+    URL_API = 'https://api.xiaomiquan.com/%s/' % API_VERSION
     URL_LOGIN = 'https://wx.xiaomiquan.com/dweb/#/login'
     URL_GROUPS = urljoin(URL_API, 'groups')
     URL_TOPICS_FORMAT = urljoin(URL_API, 'groups/{group_id}/topics?count=20&end_time={end_time}')
 
-    URL_FILE_INFO_FORMAT = 'https://api.xiaomiquan.com/v1.7/files/{file_id}'
+    URL_FILE_INFO_FORMAT = 'https://api.xiaomiquan.com/%s/files/{file_id}' % API_VERSION
     URL_FILE_DOWNLOAD_FORMAT = '%s/%s' % (URL_FILE_INFO_FORMAT, 'download_url')
 
     # headers中access_token的字段名
@@ -71,14 +72,17 @@ class XmqApi(object):
         return XmqApi.URL_FILE_DOWNLOAD_FORMAT.format(file_id=file_id)
 
     @staticmethod
-    def get_access_token():
+    def get_authorization():
         """
-        登录并获取access_token
-        :return: access_token
+        登录并获取授权相关信息
+        :return: access_token, user-agent
         """
 
         with AutoClosableChrome(CHROME_DRIVER_PATH) as driver:
             driver.get(XmqApi.URL_LOGIN)
+
+            # 获取User-Agent
+            user_agent = driver.execute_script("return navigator.userAgent")
 
             # 等待跳转至主页
             WebDriverWait(driver, 60).until(url_matches(r'index/\d+'))
@@ -95,8 +99,9 @@ class XmqApi(object):
             WebDriverWait(driver, 30).until(avatar_complete)
 
             logger.info('access_token加载成功: %s' % access_token)
+            logger.info('user-agent加载成功: %s' % user_agent)
 
-            return access_token
+            return access_token, user_agent
 
     @staticmethod
     def get_image_url(image):

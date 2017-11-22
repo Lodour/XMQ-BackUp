@@ -25,27 +25,35 @@ class ConvertToXmqApiResponseMiddleware(object):
         return response
 
 
-class AccessTokenMiddleware(object):
+class AuthorizationMiddleware(object):
     """
-    自动获取、添加、请求更新access_token的中间件
+    自动获取、添加、请求更新api授权相关变量的中间件
+    通过selenium更新时，同样更新对应的User-Agent
     """
 
     # middleware是通过实例调用的
-    # 为了维护全局的token，需要放在类变量里
+    # 为了维护全局的token/ua，需要放在类变量里
     TOKEN = None
+    USER_AGENT = None
 
     @classmethod
     def from_crawler(cls, crawler):
-        cls.TOKEN = crawler.settings['XMQ_ACCESS_TOKEN'] or XmqApi.get_access_token()
+        if crawler.settings['XMQ_ACCESS_TOKEN'] and crawler.settings['XMQ_USER_AGENT']:
+            cls.TOKEN = crawler.settings['XMQ_ACCESS_TOKEN']
+            cls.USER_AGENT = crawler.settings['XMQ_USER_AGENT']
+        else:
+            cls.TOKEN, cls.USER_AGENT = XmqApi.get_authorization()
+
         return cls()
 
     def process_request(self, request, spider):
         request.headers[XmqApi.HEADER_TOKEN_FIELD] = self.TOKEN
+        request.headers['User-Agent'] = self.USER_AGENT
 
     def process_response(self, request, response, spider):
         if isinstance(response, XmqApiResponse) and response.code == 401:
-            spider.logger.warn('access_token(%s)已失效: %r' % (self.TOKEN, response.data))
-            AccessTokenMiddleware.TOKEN = XmqApi.get_access_token()
+            spider.logger.warn('access_token(%s)已失效: %r' % (self.TOKEN, response.body))
+            AuthorizationMiddleware.TOKEN, AuthorizationMiddleware.USER_AGENT = XmqApi.get_authorization()
             return request
         return response
 

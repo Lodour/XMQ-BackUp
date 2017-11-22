@@ -11,7 +11,8 @@ from xmq.api import XmqApi, XmqApiResponse
 
 class ConvertToXmqApiResponseMiddleware(object):
     """
-    将来自api的Response转换为XmqApiResponse了不受其影响，本middleware的顺序应小于590[2]
+    将来自api的Response转换为XmqApiResponse
+    由于[1, 2]对response的class进行了分发，为了不受其影响，本middleware的顺序应小于590[2]
 
     References:
         [1] scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware
